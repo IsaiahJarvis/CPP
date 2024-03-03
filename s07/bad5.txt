@@ -1,0 +1,4 @@
+//bad5.txt
+//File has a "no matching close symbol" problem
+{ [ ( ) ]
+

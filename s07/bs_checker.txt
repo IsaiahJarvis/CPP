@@ -1,0 +1,77 @@
+//bs_checker.txt
+========================================
+ProgramDescription
+This program takes a single command-line parameter, which must be the name of a
+textfile containing (generally) C++ source code. At least this is the input for
+which the program will be found most useful.
+
+The purpose of the program is to check the input file for "balanced" symbol
+pairs of the form (), {}, or []. For simplicity we will assume that either
+no such symbols appear in comments or in quoted strings or, if they do appear,
+they are balanced in those locations.
+
+Recall that a frequent source of C++ programming errors is the failure to
+ensure that all such symbol pairs in a program are in fact properly balanced.
+Being properly balanced means that each open symbol like (, {, or [ is
+matched, or "balanced", by a corresponding close symbol like ), }, or ]
+(respectively) and all symbols are properly nested. Being properly nested,
+in turn, means that if an open symbol s_open is seen, then the matching close
+symbol s_close, say, must be seen before the close symbol corresponding to
+any open symbol that precedes s_open. As long as the symbols are properly
+nested, they may be nested to any level.
+
+Entering no command-line parameters causes the opening screen and this
+information to be displayed.
+
+                                                                 Screen 1 of 3
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+Entering a single command-line parameter causes the program to interpret the
+entry as the name of a file in the current directory, or the full pathname of
+a file in some other (readable) location. If the file cannot be opened for any
+reason, a message to that effect is displayed and the program terminates.
+
+If the input file is present, the program checks it for balanced symbols as
+described above. If all symbols occur in pairs and are properly balanced, the
+program simply reports this fact.
+
+If, on the other hand, there is a problem, or more than one problem, the
+program will report only the "first" problem it can identify. Note that this
+may not be the first actual problem in the file.
+
+The idea is that if each problem is corrected as it is identified, the program
+should continue to identify any remaining problems, one at a time, till all
+problems involving balanced symbols are removed.
+
+A problem with a close symbol occurs when it does not match the most recently-
+encountered open symbol, or when there are no previously-encountered open
+symbols against which to check it.
+
+
+                                                                 Screen 2 of 3
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+Once all close symbols have been seen, there is a problem with any remaining
+open symbols, since they have no corresponding close symbols to match them.
+
+This program also incorporates a tracing feature that is activated by having
+as a second command-line parameter the single character 't'.
+
+When tracing is activated, the program will display a message each time an
+opening symbol is pushed onto the stack and a corresponding message when the
+matching closing symbol is encountered and that opening symbol is popped off
+the stack.
+
+The program will recognize a problem with the file, and display an appropriate
+message, in each of the following cases:
+
+1. It encounters a closing symbol that does not match the one at the top of
+   the stack.
+2. It encounters a closing sybmol and the stack is empty.
+3. It comes to the end of the file (and thus will see no more closing symbols),
+   but the stack still contains one or more opening symbols. In this case the
+   program must report a problem with the first opening symbol that it saw and
+   that has no corresponding closing symbol. This will be the one at the bottom
+   of the stack.
+                                                                 Screen 3 of 3
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+----------------------------------------
+========================================

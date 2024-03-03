@@ -1,0 +1,301 @@
+//eval_pre_post.cpp
+//Lastname:Firstname:A00439675:u11
+//Submission 10
+//Evaluating Prefix and Postfix Expressions
+
+/*
+    program properly takes either a prefix or postfix expression and
+    executes and prints it out
+    it also throws all required errors properly
+*/
+
+using namespace std;
+#include <iostream>
+#include <string>
+#include <cstring>
+#include <sstream>
+#include <stdlib.h>
+#include <ctype.h>
+#include <stack>
+
+#include "utilities.h"
+using Scobey::DisplayOpeningScreen;
+using Scobey::Pause;
+
+// Global variables for recursion
+int opNum = 0, intNum = 0;
+
+void DisplayUsage()
+{
+    /**<
+     * Display a single screen of program information, with a pause at the end.
+     */
+
+    cout << "This program evaluates any valid prefix or postfix "
+        "expression which contains\npositive integer operands and the "
+        "operators +, -, * and/or /. The expression\nto be evaluated "
+        "must be entered on the command line within double quotes."
+        "\nNote that a single positive integer simply evaluates as itself."
+
+        "\n\nTypical usage examples:"
+        "\n> eval_pre_post + * 2 3 4"
+        "\n+ * 2 3 4 = 10"
+        "\n> eval_pre_post 2 3 4 + *"
+        "\n2 3 4 + * = 14"
+
+        "\n\nThe following errors are recognized and reported "
+        "for prefix expressions:"
+        "\nError: End of prefix expression reached unexpectedly."
+        "\nError: Bad operator ? encountered evaluating prefix expression."
+        "\nError: Extraneous characters found after valid prefix expression."
+        "\n\nThe following errors are recognized and reported "
+        "for postfix expressions:"
+        "\nError: End of postfix expression reached unexpectedly."
+        "\nError: Bad operator ? encountered evaluating postfix expression."
+        "\nError: Not enough operands for postfix operator ?."
+        "\nError: Found too many operands when evaluating postfix expression."
+        "\n\n           "
+        "                                                    Screen 1 of 1\n";
+    Pause();
+}
+
+//
+int prefixCalc(istream& expression);
+/**<
+calculate prefix expression
+@param expression reference to the prefix expression stringstream
+@pre properly formatted expression following given rules
+@post return answer as int
+*/
+int postfixCalc(istream& expression);
+/**<
+calculate postfix expression
+@param expression reference to the postfix expression stringstream
+@pre properly formatted expression following given rules
+@post return answer as int
+*/
+
+bool errorCheck(int type);
+
+int main(int argc, char* argv[])
+{
+    if (argc == 1)
+    {
+        Scobey::DisplayOpeningScreen("Lastname:Firstname:A00??????:u??",
+            "\nSubmission 10"
+            "\nEvaluating Prefix and Postfix Expressions");
+        DisplayUsage();
+        return EXIT_SUCCESS; //Just a name for 0
+    }
+    //variables
+    int ans;
+    int i = 0;
+    bool found = false;
+    string input = argv[1];
+    istringstream expression(input);
+
+    // check for what type of expression is given
+    while (!found)
+    {
+        // if the first input is +, -, * or / it must be prefix
+        if (input[i] == '+' || input[i] == '*' || input[i] == '-'
+            || input[i] == '/')
+        {
+            // call prefixCalc to get the answer
+            ans = prefixCalc(expression);
+
+            while (expression.peek() != EOF)
+            {
+                cout << "Error: Extraneous characters found after valid prefix"
+                    " expression.\nProgram is now terminating. \n";
+                Pause();
+                exit(0);
+            }
+
+            // print output
+            cout << input << " = " << ans << endl;
+            found = true;
+        }
+        else
+        {
+            // call postfixCalc to get the answer
+            ans = postfixCalc(expression);
+
+            // print output
+            cout << input << " = " << ans << endl;
+            found = true;
+        }
+        i++;
+    }
+}
+
+int prefixCalc(istream& expression)
+{
+    // variables
+    int firstInt, secondInt;
+    char op;
+
+    // get first char for testing if int
+    char c;
+    expression >> c;
+    expression.putback(c);
+
+    // test if int
+    if (c >= '0' && c <= '9')
+    {
+        // if int get full num and return
+        int num;
+        expression >> num;
+        intNum++;
+
+        // check for unexpected end
+        if (expression.peek() == EOF && opNum + 1 != intNum)
+        {
+            cout << "Error: End of prefix expression reached unexpectedly."
+                "\nProgram is now terminating. \n";
+            Pause();
+            exit(0);
+        }
+
+        return num;
+    }
+    // if not int check if operator
+    else if (c == '+' || c == '*' || c == '-'
+        || c == '/')
+    {
+        // if operator recursively call for ints and execute calc
+        expression >> op;
+        opNum++;
+        firstInt = prefixCalc(expression);
+        secondInt = prefixCalc(expression);
+        if (op == '+') return firstInt + secondInt;
+        if (op == '-') return firstInt - secondInt;
+        if (op == '/') return firstInt / secondInt;
+        if (op == '*') return firstInt * secondInt;
+    }
+    // if not operator or num throw error
+    else
+    {
+        cout << "Error: Bad operator " << c << " encountered evaluating "
+            "prefix expression.\nProgram is now terminating\n";
+        Pause();
+        exit(0);
+    }
+
+    // check for unexprected end
+    if (expression.peek() == EOF && opNum + 1 != intNum)
+    {
+        cout << "Error: End of prefix expression reached unexpectedly."
+            "\nProgram is now terminating. \n";
+        Pause();
+        exit(0);
+    }
+}
+
+int postfixCalc(istream& expression)
+{
+    // varaible
+    int firstInt, secondInt, ans;
+    stack<int> numStack;
+    char op;
+
+    // while loop for completing calc
+    while (expression.peek() != EOF)
+    {
+        // get next char for testing
+        char c;
+        expression >> c;
+        expression.putback(c);
+
+        // check if int
+        if (c >= '0' && c <= '9')
+        {
+            // if int push onto stack
+            int num;
+            expression >> num;
+            numStack.push(num);
+
+            // check for unexprected end
+            if (expression.peek() == EOF)
+            {
+                cout << "Error: End of postfix expression reached"
+                    " unexpectedly.\nProgram is now terminating.\n";
+                Pause();
+                exit(0);
+            }
+        }
+        // if char check if operator
+        else if (c == '+' || c == '*' || c == '-'
+            || c == '/')
+        {
+            expression >> op;
+
+            // check if stack is empty before popping
+            if (!numStack.empty())
+            {
+                secondInt = numStack.top();
+                numStack.pop();
+            }
+            // if stack is empty throw error
+            else
+            {
+                cout << "Error: Not enough operands for postfix operator "
+                    << op << ".\nProgram is now terminating\n";
+                Pause();
+                exit(0);
+            }
+            // check if stack empty before popping
+            if (!numStack.empty())
+            {
+                firstInt = numStack.top();
+                numStack.pop();
+            }
+            // if stack is empty throw error
+            else
+            {
+                cout << "Error: Not enough operands for postfix operator "
+                    << op << ".\nProgram is now terminating\n";
+                Pause();
+                exit(0);
+            }
+            if (op == '+') ans = firstInt + secondInt;
+            if (op == '-') ans = firstInt - secondInt;
+            if (op == '/') ans = firstInt / secondInt;
+            if (op == '*') ans = firstInt * secondInt;
+            numStack.push(ans);
+        }
+        // if not operator or int throw error
+        else
+        {
+            cout << "Error: Bad operator " << c << " encountered evaluating "
+                "postfix expression.\nProgram is now terminating\n";
+            Pause();
+            exit(0);
+        }
+    }
+    // check if stack has too many ints left
+    if (numStack.size() > 1)
+    {
+        cout << "Error: Found too many operands when evaluating "
+            "prefix expression.\nProgram is now terminating\n";
+        Pause();
+        exit(0);
+    }
+
+    // if stack isnt empty return answer
+    if (!numStack.empty())
+    {
+        ans = numStack.top();
+        numStack.pop();
+        return ans;
+    }
+    // if stack is empty throw error
+    else
+    {
+        cout << "Error: Not enough operands for postfix operator " << op <<
+            "encountered evaluating prefix expression.\nProgram is now "
+            "terminating\n";
+        Pause();
+        exit(0);
+    }
+}

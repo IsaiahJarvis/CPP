@@ -1,0 +1,203 @@
+// bs_checker.cpp
+//
+
+#include <iostream>
+#include <iomanip>
+#include <fstream>
+#include <stack>
+#include <algorithm>
+using namespace std;
+
+#include "utilities.h"
+using Scobey::TextItems;
+using Scobey::DisplayOpeningScreen;
+using Scobey::Pause;
+
+/*
+    struct for holding 3 values
+    * symbol: one of 3 chars, ([{
+    * index: the amount of spaces into the line the char is
+    * lineNum: the line that char was on
+*/
+struct OpenSymbol
+{
+    char symbol;
+    int index;
+    int lineNum;
+};
+
+void doesNotMatch
+(
+    OpenSymbol closingSymbol, //in
+    stack<OpenSymbol> unmatchingSymbols //in
+);
+/**<
+print output of the first mismatched values found
+@param closingSymbol the symbol that is mismatched with last open symbol
+@param unmatchingSymbols stack containing the most recent open symbol
+@pre unmatchingSymbols is not empty
+@post output is printed and program ends
+*/
+
+int main(int argc, char* argv[])
+{
+    // variables
+    OpenSymbol storeSymbol;
+    stack<OpenSymbol> openSymbols;
+    int symbolNum = 0, lineCount = 1;
+    string currentLine, fileName;
+    bool matching = true;
+
+    // print opening page if no command line input
+    if (argc == 1)
+    {
+        DisplayOpeningScreen("Jarvis:Isaiah:A00439675",
+            "\nSubmission 07\n"
+            "Checking for Balanced Symbols",
+            9, 11);
+
+        TextItems t("bs_checker.txt");
+        t.displayItem("ProgramDescription");
+
+        exit(0);
+    }
+
+    // make file and check if it can be opened
+    fileName = argv[1];
+    ifstream inFile(fileName);
+    if (!inFile.is_open())
+    {
+        cout << "Could not open file named " << fileName;
+        cout << ".\nProgram is now terminating.\n";
+        Pause();
+        exit(0);
+    }
+
+    // while loop for getting each line
+    while (getline(inFile, currentLine))
+    {
+        // for loop for checking each char
+        for (int i = 0; i < currentLine.length(); ++i)
+        {
+            // if the current char is ([{ then put it on stack
+            if (currentLine[i] == '(' || currentLine[i] == '['
+                || currentLine[i] == '{')
+            {
+                storeSymbol.symbol = currentLine[i];
+                storeSymbol.index = i;
+                storeSymbol.lineNum = lineCount;
+
+                openSymbols.push(storeSymbol);
+            }
+
+            // check if there are any ([{
+            if (openSymbols.empty())
+            {
+                // checks if current symbol is )]}
+                if (currentLine[i] == ')' || currentLine[i] == ']'
+                    || currentLine[i] == '}')
+                {
+                    // print missing open message
+                    cout << currentLine[i] << " at index " << i
+                        << " on line "  << lineCount
+                        << " is missing the corresponding open symbol.";
+                    cout << "\nThe file has unmatched symbols.\n\n";
+                    matching = false;
+                    exit(0);
+                }
+            }
+
+            // checks if if the stack is empty
+            if (!openSymbols.empty())
+            {
+                /*
+                switch for checking if the current char corresponds with
+                any closing symbols and if so pops the appropriate
+                symbol off. otherwise doesNotMatch is called
+                */
+                switch (currentLine[i])
+                {
+                case ')':
+                    if ('(' == openSymbols.top().symbol)
+                    {
+                        openSymbols.pop();
+                    }
+                    else
+                    {
+                        storeSymbol.symbol = currentLine[i];
+                        storeSymbol.index = i;
+                        storeSymbol.lineNum = lineCount;
+
+                        doesNotMatch(storeSymbol, openSymbols);
+                    }
+                    break;
+                case ']':
+                    if ('[' == openSymbols.top().symbol)
+                    {
+                        openSymbols.pop();
+                    }
+                    else
+                    {
+                        storeSymbol.symbol = currentLine[i];
+                        storeSymbol.index = i;
+                        storeSymbol.lineNum = lineCount;
+
+                        doesNotMatch(storeSymbol, openSymbols);
+                    }
+                    break;
+                case '}':
+                    if ('{' == openSymbols.top().symbol)
+                    {
+                        openSymbols.pop();
+                    }
+                    else
+                    {
+                        storeSymbol.symbol = currentLine[i];
+                        storeSymbol.index = i;
+                        storeSymbol.lineNum = lineCount;
+
+                        doesNotMatch(storeSymbol, openSymbols);
+                    }
+                    break;
+                }
+            }
+        }
+        // increment current line count
+        lineCount++;
+    }
+
+    // while loop to empty openSymbols to its last variable to see what
+    // opening symbol is missing its closing symbol
+    while (!openSymbols.empty())
+    {
+        if (openSymbols.size() == 1)
+        {
+            cout << openSymbols.top().symbol << " at index " << openSymbols.top().index
+                << " on line "  << openSymbols.top().lineNum <<
+                " has no matching close symbol.";
+            cout << "\nThe file has unmatched symbols.\n\n";
+            exit(0);
+        }
+        openSymbols.pop();
+    }
+
+    // if all symbols close properly inform user
+    cout << "\nThe file has matching symbols.\n\n";
+
+    // close file
+    inFile.close();
+}
+
+void doesNotMatch(OpenSymbol closingSymbol,
+    stack<OpenSymbol> unmatchingSymbols)
+{
+    cout << closingSymbol.symbol << " at index ";
+    cout << closingSymbol.index << " on line ";
+    cout << closingSymbol.lineNum << " does not match ";
+    cout << unmatchingSymbols.top().symbol << " at index ";
+    cout << unmatchingSymbols.top().index << " on line ";
+    cout << unmatchingSymbols.top().lineNum << ".";
+    cout << "\nThe file has unmatched symbols.\n\n";
+    exit(0);
+}
+

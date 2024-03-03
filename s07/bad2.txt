@@ -1,0 +1,4 @@
+//bad2.txt
+//File has a "missing the corresponding open symbol" problem
+} ] )
+

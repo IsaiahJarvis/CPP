@@ -1,0 +1,4 @@
+//bad3.txt
+//File has a "one symbol 'does not match' another symbol problem
+{ [ ( ] ) }
+
